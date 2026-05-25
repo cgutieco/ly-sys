@@ -1,7 +1,7 @@
 /**
- * Diccionario declarativo de las utilidades de diseño de @ly-sys/layout.
- * Esto representa el origen único de la verdad de las clases generadas
- * por el motor de layout y sus estilos CSS equivalentes.
+ * Declarative dictionary of layout utilities for @ly-sys/layout.
+ * This represents the single source of truth for classes generated
+ * by the layout engine and their equivalent CSS styles.
  */
 export const UTILITIES: Record<string, string> = {
   // Display
@@ -65,7 +65,7 @@ export const UTILITIES: Record<string, string> = {
   "basis-3/4": "flex-basis: 75%;",
 };
 
-// Generar dinámicamente utilidades con escalas (gaps, spans, etc.)
+// Dynamically generate utilities with scales (gaps, spans, etc.)
 
 // Gaps (1-12)
 for (let i = 1; i <= 12; i++) {

@@ -1,94 +1,223 @@
 # @ly-sys/layout-primitives
 
-## 📋 Propósito (Purpose)
+High-performance atomic React layout components with zero styling collisions, responsive props, and polymorphic
+rendering.
 
-`@ly-sys/layout-primitives` provee un conjunto completo de componentes React atómicos y de alto rendimiento diseñados
-específicamente para resolver la estructura y espaciado de interfaces de usuario. Incluye primitivas fundamentales como
-`Flex`, `Grid`, `HStack`, `VStack`, `Center`, `Container`, `Spacer` y `GridItem`.
+[![npm version](https://img.shields.io/npm/v/@ly-sys/layout-primitives?color=blue&style=flat-square)](https://www.npmjs.com/package/@ly-sys/layout-primitives)
+[![package manager](https://img.shields.io/badge/package__manager-pnpm-ff69b4?style=flat-square)](https://pnpm.io/)
 
----
-
-## 🏗️ Arquitectura (Architecture)
-
-Las primitivas están optimizadas para la cascada y el renderizado rápido:
-
-- **Conexión al Motor**: Cada componente utiliza de forma interna el hook `useLayout` para parsear sus propiedades de
-  espaciado y estructura de forma responsiva mediante el motor central.
-- **Polimorfismo con Radix Slot**: A través de la propiedad `asChild` (provista mediante `@radix-ui/react-slot`), puedes
-  delegar el pintado del elemento DOM al componente hijo manteniendo las clases y propiedades estructurales del layout.
-- **Validación Estricta**: El componente `Grid` valida en tiempo de renderizado que sus propiedades de configuración no
-  colisionen (por ejemplo, validar que `columns` y `minChildWidth` sean mutuamente excluyentes).
+The `@ly-sys/layout-primitives` package provides a complete set of high-performance React components designed
+specifically to resolve structure, spacing, grids, and alignment in modern user interfaces.
 
 ---
 
-## ⚙️ Instalación (Installation)
+## Key Features
+
+- **Responsive Props**: Pass responsive objects (e.g. `gap={{ base: 2, md: 4 }}`) directly to components.
+- **Polymorphism via Radix Slot**: Retain full layout capabilities while rendering semantic HTML elements or custom
+  components using `asChild`.
+- **Runtime Conflict Check**: Built-in development mode validation rules (such as ensuring columns and min-child widths
+  in Grid containers are mutually exclusive).
+- **CSS Cascade Layer Ready**: Integrates seamlessly with `@layer layout` utility styles to keep specificity near zero
+  and guarantee easy overrides.
+
+---
+
+## Installation
 
 ```bash
 pnpm add @ly-sys/layout-primitives
+# or
+npm install @ly-sys/layout-primitives
+# or
+yarn add @ly-sys/layout-primitives
 ```
+
+> [!NOTE]
+> This package requires `react` and `react-dom` (v18 or v19) as peer dependencies, and connects to the
+`@ly-sys/layout-react` context to consume the layout engine.
 
 ---
 
-## 📖 Guía de Uso (Usage Guide)
+## Usage Guide & API Reference
 
-### Composición y Uso de Componentes de Layout
+### 1. Flex
+
+A standard CSS Flexbox container.
+
+- **Properties**:
+    - `direction`: `ResponsiveValue<"row" | "column" | "row-reverse" | "column-reverse", B>`
+    - `wrap`: `ResponsiveValue<"nowrap" | "wrap" | "wrap-reverse", B>`
+    - `align`: `ResponsiveValue<"start" | "center" | "end" | "stretch" | "baseline", B>`
+    - `justify`: `ResponsiveValue<"start" | "center" | "end" | "between" | "around" | "evenly", B>`
+    - `basis`: `ResponsiveValue<number | string, B>`
+    - `grow`: `ResponsiveValue<number | string, B>`
+    - `shrink`: `ResponsiveValue<number | string, B>`
+    - `gap`: `ResponsiveValue<number | string, B>`
+    - `asChild`: `boolean`
 
 ```tsx
-import {Flex, Grid, GridItem, HStack, VStack} from "@ly-sys/layout-primitives";
-import React from "react";
+import {Flex} from "@ly-sys/layout-primitives";
 
-export function Dashboard() {
+export function Navigation() {
     return (
-        <VStack gap={4} p={4} align="stretch">
-            {/* Encabezado HStack */}
-            <HStack justify="space-between" gap={{base: 2, md: 4}}>
-                <h1>Panel de SaaS</h1>
-                <button type="button">Refrescar</button>
-            </HStack>
+        <Flex direction={{base: "column", md: "row"}} justify="between" align="center" gap={4}>
+            <div>Logo</div>
+            <Flex gap={2}>
+                <a href="/home">Home</a>
+                <a href="/about">About</a>
+            </Flex>
+        </Flex>
+    );
+}
+```
 
-            {/* Grid responsivo de tarjetas */}
-            <Grid columns={{base: 1, md: 3}} gap={4}>
-                <GridItem colSpan={{base: 1, md: 2}}>
-                    <div className="card">Gráfico Principal (Toma 2 columnas en MD)</div>
-                </GridItem>
-                <GridItem>
-                    <div className="card">Métricas Secundarias</div>
-                </GridItem>
-            </Grid>
+### 2. HStack and VStack
+
+Directional wrappers for horizontal and vertical stacks respectively.
+
+- **Properties**: Inherits all `Flex` properties, except `direction` which is statically locked (to `"row"` for `HStack`
+  and `"column"` for `VStack`).
+
+```tsx
+import {HStack, VStack, Spacer} from "@ly-sys/layout-primitives";
+
+export function Card() {
+    return (
+        <VStack gap={4} p={4} style={{border: "1px solid #ccc"}}>
+            <HStack align="center" gap={2}>
+                <h3>Card Title</h3>
+                <Spacer/>
+                <span>v1.0</span>
+            </HStack>
+            <p>This is the card body content stacked vertically.</p>
         </VStack>
     );
 }
 ```
 
-### Uso de Polimorfismo con `asChild`
+### 3. Grid
+
+A CSS Grid container.
+
+- **Properties**:
+    - `columns`: `ResponsiveValue<number | string, B>`
+    - `minChildWidth`: `ResponsiveValue<number | string, B>`
+    - `rowGap` / `columnGap` / `gap`: `ResponsiveValue<number | string, B>`
+    - `asChild`: `boolean`
+
+> [!WARNING]
+> `columns` and `minChildWidth` are **mutually exclusive**. Attempting to provide both simultaneously will throw a
+> development error (unless `validationMode` is configured as `"permissive"`).
+>
+> When using `minChildWidth`, the component registers dynamic `rawCSS` (critical styles) containing media queries (e.g.
+`@media (min-width: 640px) { ... }`) to build the auto-fit grid safely.
+
+```tsx
+import {Grid, GridItem} from "@ly-sys/layout-primitives";
+
+export function Gallery() {
+    return (
+        // Responsive grid specifying column template count
+        <Grid columns={{base: 1, sm: 2, md: 4}} gap={4}>
+            <GridItem colSpan={{base: 1, sm: 2}}>Main Item (takes 2 cols on SM)</GridItem>
+            <GridItem>Item 2</GridItem>
+            <GridItem>Item 3</GridItem>
+        </Grid>
+    );
+}
+```
+
+### 4. GridItem
+
+A child component within a `Grid` container to control span, start, and end rules.
+
+- **Properties**:
+    - `colSpan` / `rowSpan`: `ResponsiveValue<number | string, B>` (supports numeric spans and `"full"`)
+    - `colStart` / `colEnd` / `rowStart` / `rowEnd`: `ResponsiveValue<number | string, B>`
+    - `gap`: `ResponsiveValue<number | string, B>`
+    - `asChild`: `boolean`
+
+### 5. Container
+
+A centered layout wrapper with a constrained maximum width.
+
+- **Properties**:
+    - `maxWidth`: `ResponsiveValue<number | string, B>` (supports values like `"xs"`, `"md"`, `"3xl"`, `"7xl"`,
+      `"full"`, `"min"`, `"max"`, `"fit"`, or arbitrary numbers)
+    - `centerContent`: `ResponsiveValue<"auto" | "none", B>` (defaults to `"auto"` which applies `margin-inline: auto` /
+      `mx-auto`)
+    - `gap`: `ResponsiveValue<number | string, B>`
+    - `asChild`: `boolean`
+
+```tsx
+import {Container} from "@ly-sys/layout-primitives";
+
+export function PageLayout() {
+    return (
+        <Container maxWidth="7xl" p={4}>
+            <h1>Layout Content Centered</h1>
+        </Container>
+    );
+}
+```
+
+### 6. Center
+
+A container that centers its children vertically and horizontally using flexbox alignment.
+
+- **Properties**:
+    - `inline`: `ResponsiveValue<"flex" | "inline-flex", B>` (defaults to `"flex"`)
+    - `gap`: `ResponsiveValue<number | string, B>`
+    - `asChild`: `boolean`
 
 ```tsx
 import {Center} from "@ly-sys/layout-primitives";
-import React from "react";
 
-export function Section() {
+export function CenteredLoader() {
     return (
-        // Se renderizará como un elemento HTML5 <section> nativo
-        <Center asChild p={8} minH="200px">
-            <section className="custom-banner">
-                <h2>Contenido Centrado</h2>
-            </section>
+        <Center style={{height: "100vh"}}>
+            <div>Loading...</div>
         </Center>
+    );
+}
+```
+
+### 7. Spacer
+
+A flexible component that grows to fill available space within a Flexbox container (`flex-direction: row` or `column`).
+
+- **Properties**:
+    - `asChild`: `boolean`
+
+---
+
+## Polymorphic Rendering via `asChild`
+
+All layout primitives support the `asChild` property (via `@radix-ui/react-slot`). When `asChild` is `true`, the layout
+component does not render its default DOM element (`div`). Instead, it delegates all layout class names, refs, and
+properties to its immediate child element.
+
+This is highly useful for semantic SEO layout structuring:
+
+```tsx
+import {Center, HStack} from "@ly-sys/layout-primitives";
+
+export function Footer() {
+    return (
+        // Renders as a semantic <footer> instead of a <div>
+        <HStack asChild justify="between" p={4}>
+            <footer>
+                <p>© 2026 Company</p>
+                <a href="/privacy">Privacy Policy</a>
+            </footer>
+        </HStack>
     );
 }
 ```
 
 ---
 
-## 🔍 Detalles Adicionales (Additional Details)
+## License
 
-### Reglas de Exclusividad en `Grid`
-
-El primitivo `Grid` cuenta con una validación incorporada para prevenir configuraciones incorrectas en tiempo de
-ejecución:
-
-- **`columns`** y **`minChildWidth`** son **mutuamente excluyentes**. Si intentas proveer ambas propiedades al mismo
-  tiempo, el componente arrojará un error de desarrollo explícito explicándote que no es posible utilizar columnas
-  estáticas junto con un ancho mínimo adaptable para los hijos.
-- Si utilizas `minChildWidth`, el componente inyectará un estilo inline crítico (`rawCSS`) dinámico para definir la
-  estructura adaptativa CSS Grid.
+MIT. See the root [LICENSE](../../LICENSE) file.

@@ -1,74 +1,161 @@
 # @ly-sys/layout-engine
 
-## 📋 Propósito (Purpose)
+Core computation, responsive property parser, and utility class conflict resolution engine.
 
-`@ly-sys/layout-engine` es el núcleo de computación y resolución del sistema de diseño. Es el motor responsable de
-interpretar valores responsivos de diseño (como `gap={{ base: 2, md: 4 }}`), asociar las propiedades a sus respectivas
-clases de utilidad e inyectar modificadores de prefijo y breakpoints de forma rápida y eficiente en tiempo de ejecución.
+[![npm version](https://img.shields.io/npm/v/@ly-sys/layout-engine?color=blue&style=flat-square)](https://www.npmjs.com/package/@ly-sys/layout-engine)
+[![package manager](https://img.shields.io/badge/package__manager-pnpm-ff69b4?style=flat-square)](https://pnpm.io/)
 
----
-
-## 🏗️ Architecture
-
-El motor de diseño consta de cuatro componentes clave:
-
-1. **Parser Responsivo (`parseResponsive`)**: Traduce declaraciones complejas en un string formateado de clases CSS.
-2. **Mapa de Propiedades (`PROPERTY_MAP`)**: Traduce props atómicas de TypeScript (como `alignItems`, `flexDirection`,
-   etc.) a clases de utilidad válidas del sistema CSS.
-3. **Compilador de Prefijos y Breakpoints**: Prepara y normaliza los nombres de clase según la configuración de
-   prefijos (ej: `ly-sys-`) y pantallas asociadas.
-4. **Caché LRU (`createLRUCache`)**: Almacena en memoria las traducciones previas de propiedades responsivas para evitar
-   la penalización de parsear strings en renders sucesivos.
+The `@ly-sys/layout-engine` package is the core computational core of the design system. It interprets responsive layout
+values (such as `gap={{ base: 2, md: 4 }}`), translates high-level layout properties into atomic utility classes,
+resolves class name conflicts (prioritizing custom overrides over defaults), and applies prefixing rules cleanly and
+efficiently at runtime.
 
 ---
 
-## ⚙️ Instalación (Installation)
+## Key Features
+
+- **Low-Overhead Parsers**: Converts complex declarations into formatted utility class strings inside highly optimized
+  hot paths.
+- **Deduplication Engine**: Uses a right-most wins resolution algorithm for CSS class conflicts, adhering to a defined
+  priority hierarchy (App-specific overrides > global/neutral classes > library defaults).
+- **Sub-Microsecond Resolution**: Integrates a Least Recently Used (LRU) Cache to completely bypass calculations on
+  subsequent component rendering cycles.
+- **Prefix and Breakpoint Decorator**: Seamlessly processes responsive breakpoint prefixes (e.g., `md:ly-gap-4`) and
+  prefixes according to configuration rules.
+- **Zero Style Collisions**: Coordinates styling boundaries without external runtimes, producing highly clean utility
+  strings compatible with CSS Cascade Layers.
+
+---
+
+## Architecture
+
+The engine is comprised of three core modules:
+
+```
+┌────────────────────────────────────────────────────────┐
+│                      LayoutEngine                      │
+├────────────────────────────────────────────────────────┤
+│  1. parseResponsive() ──►  [LRU Cache Lookup]          │
+│                              │                         │
+│                              ├─► Cache Hit  ──► Output │
+│                              └─► Cache Miss ──► Parse  │
+│                                                        │
+│  2. resolve()         ──► Rightmost-wins & Priority     │
+│                           App > Neutral > Lib          │
+│                                                        │
+│  3. prefix()          ──► Prepends prefixes to classes │
+└────────────────────────────────────────────────────────┘
+```
+
+### 1. Responsive Property Parser
+
+Translates atomic layout components' properties into valid responsive and prefixed utility class strings using the
+current breakpoint configurations.
+
+### 2. Collision Resolver (`resolve`)
+
+Resolves layout utility conflicts at runtime. It analyzes class classes, groups them by property family (e.g.,
+`flex-direction`, `gap`, `padding`), and retains only the winning classes according to priority:
+
+- **`App`** (`appPrefix`, Priority 3): Local application-specific utility classes.
+- **`Neutral`** (No prefix, Priority 2): Standard utility classes (e.g. Tailwind or default CSS).
+- **`Lib`** (`libPrefix`, Priority 1): Library-specific default layout classes.
+
+Within the same priority tier, the **rightmost class** (last declared) wins.
+
+---
+
+## Installation
 
 ```bash
 pnpm add @ly-sys/layout-engine
+# or
+npm install @ly-sys/layout-engine
+# or
+yarn add @ly-sys/layout-engine
 ```
 
 ---
 
-## 📖 Guía de Uso (Usage Guide)
+## Usage Guide
 
-### Creación del Motor y Parseo de Propiedades
+### 1. Instantiating the Engine
+
+Create an engine instance with a customized library prefix and screen breakpoints:
 
 ```typescript
 import {createLayoutEngine} from "@ly-sys/layout-engine";
 
-// 1. Instanciar el motor con prefijos y breakpoints
 const engine = createLayoutEngine({
-    libPrefix: "ly-sys",
-    breakpoints: ["base", "sm", "md", "lg", "xl"]
+    libPrefix: "ly",       // Prefix for layout class names (e.g. ly-flex)
+    appPrefix: "app",      // Prefix for application-specific custom overrides
+    breakpoints: ["base", "sm", "md", "lg", "xl"] as const
 });
+```
 
-// 2. Parsear propiedades responsivas
-const classes = engine.parseResponsive(
-    {base: "row", md: "column"}, // Valor responsivo
-    "flexDirection",               // Propiedad de diseño
-    (val) => `flex-${val}`         // Función generadora de utilidad
+### 2. Parsing Responsive Values
+
+Use `parseResponsive` to convert responsive objects or singular values into utility strings:
+
+```typescript
+const directionClasses = engine.parseResponsive(
+    {base: "column", md: "row"}, // Responsive configuration
+    "direction",                  // Layout property name
+    (v) => `flex-${v}`            // Utility class mapper function
 );
 
-console.log(classes);
-// Output: "ly-sys-flex-row md:ly-sys-flex-column"
+console.log(directionClasses);
+// Output: "ly-flex-col md:ly-flex-row"
+```
+
+### 3. Resolving Conflicts with `resolve`
+
+Ensure utility overrides behaves predictably when merging user-supplied classes and default generated classes:
+
+```typescript
+// Conflict 1: Overriding same property (e.g. flex-row vs flex-col)
+const resolved = engine.resolve(
+    "ly-flex ly-flex-row ly-gap-4", // Generated layout classes
+    "ly-flex-col"                   // User custom classes
+);
+console.log(resolved);
+// Output: "ly-flex ly-gap-4 ly-flex-col"
+// (ly-flex-col overridden ly-flex-row due to rightmost-wins)
+
+// Conflict 2: Prioritizing application overrides
+const resolvedPriorities = engine.resolve(
+    "ly-gap-4",   // Lib level (Priority 1)
+    "app-gap-8"   // App level (Priority 3)
+);
+console.log(resolvedPriorities);
+// Output: "app-gap-8"
+// (app-gap-8 takes priority over ly-gap-4 regardless of ordering)
 ```
 
 ---
 
-## 🔍 Detalles Adicionales (Additional Details)
+## Additional Details
 
-### Rendimiento mediante Caché LRU
+### Caching Performance (LRU Cache)
 
-Para optimizar las aplicaciones React de alta interactividad, el motor integra un Caché LRU (Least Recently Used) que
-almacena un máximo de 500 resoluciones por defecto. Esto asegura que la conversión de objetos responsivos a strings de
-clases se realice en tiempo $O(1)$ en la gran mayoría de renders:
+Parsing responsive property configurations involves loops, object serialization, and array joining. To keep runtime
+overhead near zero, the layout engine integrates a Least Recently Used (LRU) Cache (defaults to 500 entries).
+
+You can also instantiate the cache standalone if needed:
 
 ```typescript
 import {createLRUCache} from "@ly-sys/layout-engine";
 
-const cache = createLRUCache<string, string>(100); // Límite de 100 entradas
+// Create cache with capacity of 100 items
+const cache = createLRUCache<string>(100);
 
-cache.set("key-1", "resolved-class-string");
-console.log(cache.get("key-1")); // "resolved-class-string"
+cache.set("flexDirection|base:row;md:column", "ly-flex-row md:ly-flex-col");
+console.log(cache.get("flexDirection|base:row;md:column"));
+// Output: "ly-flex-row md:ly-flex-col"
 ```
+
+---
+
+## License
+
+MIT. See the root [LICENSE](../../LICENSE) file.

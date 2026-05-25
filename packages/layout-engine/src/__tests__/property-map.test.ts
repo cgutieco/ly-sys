@@ -23,7 +23,7 @@ test("extractPropertyGroup classifications", () => {
     breakpoint: undefined,
   });
 
-  // Ejes (columns / rows gap)
+  // Axes (columns / rows gap)
   expect(extractPropertyGroup("md:pcf-gap-x-4", "pcf", "app")).toEqual({
     group: "column-gap",
     source: "lib",

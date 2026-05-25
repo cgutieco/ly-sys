@@ -32,10 +32,10 @@ export const useLayout = <B extends string>(): LayoutContextValue<B> => {
   if (ctx === null) {
     const isDev = typeof process !== "undefined" && process.env.NODE_ENV !== "production";
     if (isDev) {
-      throw new Error("[ly-sys/layout] useLayout debe usarse dentro de un <LayoutProvider>.");
+      throw new Error("[ly-sys/layout] useLayout must be used within a <LayoutProvider>.");
     }
     // Production fallback
-    console.error("[ly-sys/layout] useLayout fuera de LayoutProvider.");
+    console.error("[ly-sys/layout] useLayout outside of a <LayoutProvider>.");
     return {
       engine: createEmptyEngine(),
     } as LayoutContextValue<B>;

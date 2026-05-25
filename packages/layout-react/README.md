@@ -1,111 +1,181 @@
 # @ly-sys/layout-react
 
-## 📋 Propósito (Purpose)
+Official React bindings, context providers, and hooks for the layout system.
 
-El paquete `@ly-sys/layout-react` provee los bindings oficiales de React para la suite de diseño. Proporciona el
-contexto global (`LayoutContext`), el proveedor (`LayoutProvider`) y los hooks (`useLayout`) necesarios para conectar de
-manera segura y transparente los componentes React con el motor de layout y el recolector de candidatos MFE.
+[![npm version](https://img.shields.io/npm/v/@ly-sys/layout-react?color=blue&style=flat-square)](https://www.npmjs.com/package/@ly-sys/layout-react)
+[![package manager](https://img.shields.io/badge/package__manager-pnpm-ff69b4?style=flat-square)](https://pnpm.io/)
 
----
-
-## 🏗️ Arquitectura (Architecture)
-
-La arquitectura de este paquete gira en torno a la **decoración del motor** durante el tiempo de renderizado:
-
-- **`LayoutProvider`**: Recibe una instancia de `LayoutEngine` y, de forma opcional, un `CandidateCollector`. Si el
-  colector está presente, el proveedor decora el motor interceptando su método `parseResponsive`. Cada vez que un
-  componente de layout calcula una clase responsiva, el proveedor la registra inmediatamente en el colector.
-- **Seguridad en SSR**: La instanciación por petición del `CandidateCollector` a nivel de Provider asegura que los
-  estilos dinámicos de renderizados concurrentes en el servidor no tengan fugas de memoria o se mezclen entre
-  peticiones.
+The `@ly-sys/layout-react` package provides the official React bindings for the layout system. It handles context
+initialization (`LayoutProvider`), custom layout engine binding, and styling candidate extraction via automatic compiler
+decoration.
 
 ---
 
-## ⚙️ Instalación (Installation)
+## Key Features
+
+- **Automated Style Interception**: Automatically listens to the rendering layout primitive calculations and logs used
+  styling candidates to a central collector.
+- **SSR Safe Architecture**: Request-scoped collector instantiation prevents memory leaks and CSS cross-contamination in
+  concurrent server renderings.
+- **Fail-Safe Fallbacks**: The context hook (`useLayout`) automatically falls back to a prefix-free mock layout engine
+  in production environments if used outside a provider to avoid crashing layouts.
+- **React 18 & 19 Support**: Full compatibility with the latest versions of React.
+
+---
+
+## Architecture
+
+```
+┌────────────────────────────────────────────────────────┐
+│                     LayoutProvider                     │
+├────────────────────────────────────────────────────────┤
+│  If CandidateMode.Collect & collector is present:      │
+│                                                        │
+│  Decorates Engine:                                     │
+│  parseResponsive() ──►  engine.parseResponsive()       │
+│                                │                       │
+│                                ├──► Classes            │
+│                                │                       │
+│                                └──► Intercept & Strip  │
+│                                     Prefixes           │
+│                                        │               │
+│                                        ▼               │
+│                                     collector.add()    │
+└────────────────────────────────────────────────────────┘
+```
+
+The React provider wraps the underlying `LayoutEngine`. If candidate collection is enabled (
+`candidateMode === CandidateMode.Collect`) and a `collector` is provided, the provider automatically wraps the engine's
+`parseResponsive` method. Whenever a layout primitive (e.g. `<Flex>`, `<Grid>`) is rendered, its computed styling
+classes are captured, stripped of library prefixes, and stored in the collector.
+
+---
+
+## Installation
 
 ```bash
 pnpm add @ly-sys/layout-react
+# or
+npm install @ly-sys/layout-react
+# or
+yarn add @ly-sys/layout-react
 ```
 
 ---
 
-## 📖 Guía de Uso (Usage Guide)
+## Usage Guide & API Reference
 
-### Integración de `LayoutProvider` en tu Aplicación React
+### 1. Basic Layout Context Integration
+
+Wrap your application tree in `<LayoutProvider>` and provide a layout engine:
 
 ```tsx
-import {createLayoutEngine} from "@ly-sys/layout-engine";
-import {createCandidateCollector} from "@ly-sys/layout-protocol";
-import {LayoutProvider} from "@ly-sys/layout-react";
 import React from "react";
+import {createLayoutEngine} from "@ly-sys/layout-engine";
+import {LayoutProvider} from "@ly-sys/layout-react";
 
-// 1. Inicializar servicios
-const engine = createLayoutEngine({libPrefix: "ly-sys"});
-const collector = createCandidateCollector();
+// Initialize layout engine
+const engine = createLayoutEngine({
+    libPrefix: "ly",
+    breakpoints: ["base", "sm", "md", "lg", "xl"] as const
+});
 
-export function App() {
+export function App({children}: { children: React.ReactNode }) {
     return (
-        <LayoutProvider engine={engine} collector={collector}>
-            <MainLayout/>
+        <LayoutProvider engine={engine}>
+            {children}
         </LayoutProvider>
     );
 }
 ```
 
-### Consumir el Contexto con `useLayout`
+### 2. Custom Hooks (`useLayout`)
+
+Consume the context inside custom components to manually parse responsive values:
 
 ```tsx
-import {useLayout} from "@ly-sys/layout-react";
 import React from "react";
+import {useLayout} from "@ly-sys/layout-react";
 
 export function CustomBox({children}: { children: React.ReactNode }) {
     const {engine} = useLayout();
 
-    // Resolver clases dinámicas manualmente usando el motor del contexto
+    // Manually resolve responsive custom styling rules
     const classes = engine.parseResponsive(
         {base: 2, md: 4},
         "gap",
-        (val) => `gap-${val}`
+        (v) => `gap-${v}`
     );
 
-    return <div className={classes}>{children}</div>;
+    return (
+        <div className={classes}>
+            {children}
+        </div>
+    );
 }
 ```
 
 ---
 
-## 🔍 Detalles Adicionales (Additional Details)
+## Server-Side Rendering (SSR) & Isolation
 
-### Ciclo de Vida y Aislamiento en SSR (Server-Side Rendering)
+When server rendering an application, concurrent requests must not share a singleton styling collector to avoid
+cross-request contamination.
 
-Cuando uses este paquete en un servidor node.js / SSR:
+### Complete SSR Flow Example
 
-1. Crea un `collector` único **por cada solicitud entrante**.
-2. Envuelve tu renderizado con un `<LayoutProvider engine={engine} collector={collector}>` específico de ese request.
-3. Tras finalizar el HTML string rendering, ejecuta `collector.flush()` para obtener el lote de estilos exacto que usó
-   esa página y límpialo para prevenir fugas de memoria.
+```tsx
+import React from "react";
+import ReactDOMServer from "react-dom/server";
+import {createLayoutEngine} from "@ly-sys/layout-engine";
+import {createCandidateCollector} from "@ly-sys/layout-protocol";
+import {LayoutProvider} from "@ly-sys/layout-react";
+import {App} from "./App.js";
 
-### ❓ ¿Por qué mi slot de `candidates` suele estar vacío?
+const engine = createLayoutEngine({
+    libPrefix: "ly",
+    candidateMode: "collect", // Enable candidate collection mode
+    breakpoints: ["base", "sm", "md", "lg", "xl"] as const
+});
 
-Si estás desarrollando en un Micro-Frontend (Remote) utilizando componentes primitivos de React de `@ly-sys/layout` (
-como `<Flex>`, `<Grid>`, `<VStack>`), es completamente normal que al llamar imperativamente a
-`layoutService.registerCandidates` envíes el array de `candidates` vacío (`candidates: []`).
+export function handleRenderRequest(req: Request) {
+    // 1. Create a unique collector instance per request
+    const requestCollector = createCandidateCollector();
 
-Esto ocurre gracias a la **recolección automática** de este paquete:
+    // 2. Render layout tree to HTML
+    const html = ReactDOMServer.renderToString(
+        <LayoutProvider engine={engine} collector={requestCollector}>
+            <App/>
+        </LayoutProvider>
+    );
 
-* Al renderizar componentes de layout en React, el `LayoutProvider` intercepta automáticamente las clases responsivas y
-  las registra en el colector de candidatos del Host.
+    // 3. Flush candidate batch (resets collector internally for safety)
+    const batch = requestCollector.flush();
 
-#### ¿Cuándo debes poblar `candidates` manualmente?
+    // 4. Return the HTML and extracted candidates batch (for host injection)
+    return {html, batch};
+}
+```
 
-Debes usar el array `candidates` de forma manual en escenarios donde el recolector automático de React no tiene
-visibilidad de las clases utilitarias de layout:
+---
 
-1. **Uso de HTML Nativo**: Si utilizas etiquetas HTML planas (como `<div>` o `<button>`) con clases utilitarias del
-   layout directamente (ej: `className="ly-flex ly-gap-4"`), en lugar de los componentes primitivos `<Flex>` o
-   `<VStack>`.
-2. **Microfrontends no basados en React**: Si integras módulos remotos construidos en **Svelte**, **Angular** o *
-   *Vanilla JS** que utilicen el sistema de rejilla y clases de maquetación del Host.
-3. **HTML Dinámico**: Si inyectas código dinámico de un API o headless CMS mediante `dangerouslySetInnerHTML` que
-   contenga clases utilitarias de maquetación.
+## Advanced Guide: Manual Candidate Population
 
+If you render React primitives (e.g. `<Flex>`, `<Grid>`), candidate collection is **100% automated** by the provider
+decoration engine.
+
+However, you should manually add candidates to the collector (e.g., using `collector.add("utility-class")`) in the
+following scenarios where the automatic React collector does not have visibility:
+
+1. **Native HTML Elements**: If you use standard tags like `<div className="ly-flex ly-gap-4">` instead of structural
+   `<Flex gap={4}>` primitives.
+2. **Dynamic / External HTML**: If you render HTML templates dynamically using `dangerouslySetInnerHTML` containing
+   layout utilities.
+3. **Cross-Framework Remotes**: If your Module Federation contains remote MFEs built with **Svelte**, **Angular**, or *
+   *Vue** that rely on the Host's grid styling.
+
+---
+
+## License
+
+MIT. See the root [LICENSE](../../LICENSE) file.

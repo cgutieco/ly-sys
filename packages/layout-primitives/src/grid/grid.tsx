@@ -63,7 +63,7 @@ export const Grid = forwardRef<any, any>(
     if (columns !== undefined && minChildWidth !== undefined) {
       if (engine.config.validationMode !== ValidationMode.Permissive) {
         throw new Error(
-          '[ly-sys/layout] "columns" y "minChildWidth" son mutuamente excluyentes en Grid.',
+          '[ly-sys/layout] "columns" and "minChildWidth" are mutually exclusive in Grid.',
         );
       }
     }

@@ -181,7 +181,7 @@ test("7.3 Context Loss / React Singleton violation safety safeguards", () => {
 
   expect(() => {
     renderToString(React.createElement(DevDummy));
-  }).toThrow(/useLayout debe usarse dentro de un <LayoutProvider>/);
+  }).toThrow(/useLayout must be used within a <LayoutProvider>/);
 
   // 2. Simulation of PRODUCTION environment
   process.env.NODE_ENV = "production";
@@ -199,7 +199,7 @@ test("7.3 Context Loss / React Singleton violation safety safeguards", () => {
 
   // Verify console.error was logged
   expect(consoleErrorSpy).toHaveBeenCalledWith(
-    expect.stringContaining("[ly-sys/layout] useLayout fuera de LayoutProvider."),
+    expect.stringContaining("[ly-sys/layout] useLayout outside of a <LayoutProvider>."),
   );
 
   // Verify a safe empty fallback engine is returned and works without crashing

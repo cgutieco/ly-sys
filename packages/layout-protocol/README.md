@@ -1,120 +1,110 @@
 # @ly-sys/layout-protocol
 
-## 📋 Propósito (Purpose)
+Specification, data models, and service interfaces for the layout candidate communication protocol.
 
-El paquete `@ly-sys/layout-protocol` define la especificación formal del contrato de comunicación basado en candidatos
-utilizado por la suite de diseño para posibilitar la inyección dinámica y la orquestación distribuida de estilos CSS.
-Está diseñado especialmente para arquitecturas desacopladas como **Micro-Frontends (MFE)** y renderizado en el
-servidor (SSR).
+[![npm version](https://img.shields.io/npm/v/@ly-sys/layout-protocol?color=blue&style=flat-square)](https://www.npmjs.com/package/@ly-sys/layout-protocol)
+[![package manager](https://img.shields.io/badge/package__manager-pnpm-ff69b4?style=flat-square)](https://pnpm.io/)
+
+The `@ly-sys/layout-protocol` package defines the formal specifications, types, and services utilized by the layout
+system to orchestrate dynamic style injection. It is engineered specifically for decoupled architectures, such as *
+*Micro-Frontends (MFE)** and **Server-Side Rendering (SSR)**.
 
 ---
 
-## 🏗️ Arquitectura (Architecture)
+## Key Features
 
-La arquitectura del protocolo se basa en un recolector de estado con una huella de memoria constante $O(1)$ gracias al
-uso de deduplicación en tiempo de ejecución.
+- **Decoupled Architecture**: Remotes register style "candidates" they need at runtime without bundling static CSS
+  sheets.
+- **Prefix Decoupling**: Candidates are collected prefix-free (e.g. `"gap-4"`). Hosts prepend their configured prefix at
+  runtime, enabling MFEs to run on hosts with different prefixes without rebuilds.
+- **Constant Memory Footprint**: Collector deduplicates candidates on-the-fly, keeping memory overhead $O(1)$.
+- **Module Federation Service**: Features `LayoutService` for DI (Dependency Injection) containers, coordinating
+  critical and deferred style injection between remotes and hosts.
 
-### Modelado de Datos (Contracts)
+---
 
-El protocolo define las siguientes estructuras de datos:
+## Architecture
 
-- **`CANDIDATE_PROTOCOL_VERSION`**: Versión activa del protocolo (`"1.0"`).
-- **`Candidate`**: Representa una clase de utilidad utilizada (ej: `flex-col`, `gap-4`), junto con su breakpoint
-  opcional (`sm`, `md`, `lg`). **Nota de diseño**: Las utilidades de los candidatos siempre se registran *sin prefijo* (
-  ej: `"flex"` en lugar de `"ly-flex"`).
-- **`RawCSS`**: Objeto que divide estilos en línea dinámicos entre estilos síncronos bloqueantes (`critical`) y estilos
-  asíncronos (`deferable`).
-- **`CandidateBatch`**: Colección deduplicada y agrupada de candidatos y bloques de estilos listos para ser enviados al
-  host.
-- **`ProviderResponse`**: Payload formal devuelto por un control remoto/MFE hacia la aplicación host.
+The protocol is designed around a state collector that intercepts layout components during render cycles and flushes
+them as a structured batch payload.
 
-#### 🎯 Desacoplamiento de Prefijos (Prefix Decoupling)
-
-Para garantizar la máxima portabilidad de los Micro-Frontends, el contrato del protocolo establece que los candidatos
-exponen únicamente el nombre base de la utilidad pura (ej: `"gap-4"`).
-
-El prefijo de estilos (como `ly-` o `ly-sys-`) es una configuración de infraestructura que pertenece exclusivamente al
-Host. Al inyectar o resolver los estilos:
-
-1. El **Host** concatena dinámicamente su prefijo configurado a la utilidad recibida antes de compilar y emitir el CSS (
-   ej: generando `.ly-gap-4 { gap: 16px; }`).
-2. El **LayoutProvider** (en los bindings de React) remueve automáticamente los prefijos de las clases de HTML
-   interceptadas antes de registrarlas en el colector de candidatos.
-
-De este modo, el mismo Micro-Frontend puede integrarse en diferentes Hosts con distintas configuraciones de prefijos sin
-tener que alterar el código del remoto.
-
-### Flujo de Recolección en SSR
+### SSR / Rendering Collection Flow
 
 ```mermaid
 sequenceDiagram
     participant MFE as Micro-Frontend (Remote)
-    participant Provider as LayoutProvider (Decorador)
+    participant Provider as LayoutProvider (Decorator)
     participant Engine as LayoutEngine Core
     participant Collector as CandidateCollector
 
-    Note over MFE,Collector: 1. Instanciación por Request
+    Note over MFE,Collector: 1. Instantiation per Request
     MFE->>Collector: createCandidateCollector()
     MFE->>Provider: <LayoutProvider engine={engine} collector={collector}>
     
-    Note over Provider,Engine: 2. Decoración Transparente del Engine
-    Provider->>Engine: Intercepta parseResponsive()
+    Note over Provider,Engine: 2. Transparent Engine Decoration
+    Provider->>Engine: Intercepts parseResponsive()
 
-    Note over MFE,Provider: 3. Renderizado y Registro
+    Note over MFE,Provider: 3. Render and Registration
     MFE->>Provider: <Flex gap={{ base: 2, md: 4 }}>
     Provider->>Engine: engine.parseResponsive()
-    Engine-->>Provider: Retorna "ly-gap-2 md:ly-gap-4"
+    Engine-->>Provider: Returns "ly-gap-2 md:ly-gap-4"
     Provider->>Collector: collector.add("gap-2", undefined)
     Provider->>Collector: collector.add("gap-4", "md")
     
-    Note over MFE,Collector: 4. Extracción (Flush)
+    Note over MFE,Collector: 4. Extraction (Flush)
     MFE->>Collector: collector.flush()
-    Collector-->>MFE: Retorna CandidateBatch y limpia estado interno
+    Collector-->>MFE: Returns CandidateBatch and resets internal state
 ```
 
 ---
 
-## ⚙️ Instalación (Installation)
+## Installation
 
 ```bash
 pnpm add @ly-sys/layout-protocol
+# or
+npm install @ly-sys/layout-protocol
+# or
+yarn add @ly-sys/layout-protocol
 ```
 
 ---
 
-## 📖 Guía de Uso (Usage Guide)
+## Usage Guide & API Reference
 
-### Creación y Registro de Candidatos en el Micro-Frontend
+### 1. Candidate Collector API
+
+Use `createCandidateCollector` to track style classes and raw styles:
 
 ```typescript
 import {createCandidateCollector} from "@ly-sys/layout-protocol";
 
-// 1. Crear el recolector
+// 1. Create a collector
 const collector = createCandidateCollector();
 
-// 2. Registrar utilidades en tiempo de renderizado
+// 2. Add candidates (utilities must be prefix-free)
 collector.add("flex-row");
 collector.add("gap-4", "md");
 
-// 3. Registrar CSS crudo generado dinámicamente
+// 3. Add custom raw inline CSS (e.g. from minChildWidth grid rules)
 collector.addRawCSS({
-    critical: ".my-custom-grid { display: grid; }",
-    deferable: ".my-custom-grid:hover { opacity: 0.9; }"
+    critical: ".custom-grid { display: grid; }",
+    deferable: ".custom-grid:hover { opacity: 0.9; }"
 });
 
-// 4. Extraer el batch y limpiar el recolector para el siguiente request
+// 4. Flush the batch (returns the batch data and resets the collector state)
 const batch = collector.flush();
 console.log(batch);
 /*
 Output:
 {
   candidates: [
-    { utility: "flex-row" },
+    { utility: "flex-row", breakpoint: undefined },
     { utility: "gap-4", breakpoint: "md" }
   ],
   rawCSS: {
-    critical: ".my-custom-grid { display: grid; }",
-    deferable: ".my-custom-grid:hover { opacity: 0.9; }"
+    critical: ".custom-grid { display: grid; }",
+    deferable: ".custom-grid:hover { opacity: 0.9; }"
   }
 }
 */
@@ -122,46 +112,99 @@ Output:
 
 ---
 
-## 🔍 Detalles Adicionales (Additional Details)
+### 2. LayoutService (Module Federation & MFE Orchestration)
 
-### Algoritmo de Consolidación e Inyección en el Host (Shell MFE)
+In distributed frontends, remotes shouldn't duplicate style compilation. Instead, they share a singleton `LayoutService`
+registered in a DI (Dependency Injection) container.
 
-Cuando utilizas múltiples Micro-Frontends, la aplicación Shell Host consolida los candidatos de todos los componentes
-antes de solicitar el CSS al servicio central de estilos:
+#### Host Configuration (DI container initialization)
 
 ```typescript
-import {createCandidateCollector, CANDIDATE_PROTOCOL_VERSION} from "@ly-sys/layout-protocol";
-import type {ProviderResponse, Candidate} from "@ly-sys/layout-protocol";
+import {createLayoutService} from "@ly-sys/layout-protocol";
+import {createLayoutEngine} from "@ly-sys/layout-engine";
 
-async function renderHostPage() {
-    const remoteResponses: ProviderResponse[] = [
-        {
-            protocolVersion: "1.0",
-            candidates: [{utility: "flex-col"}],
-            rawCSS: {critical: ".header { height: 60px; }"}
-        },
-        {
-            protocolVersion: "1.0",
-            candidates: [{utility: "flex-col"}, {utility: "gap-2", breakpoint: "lg"}]
-        }
-    ];
+const hostEngine = createLayoutEngine({libPrefix: "ly"});
 
-    // 1. Validar versiones del protocolo
-    for (const res of remoteResponses) {
-        if (res.protocolVersion !== CANDIDATE_PROTOCOL_VERSION) {
-            throw new Error("Versión incompatible del protocolo");
-        }
+// Bind to DI container as a singleton
+const layoutService = createLayoutService({
+    engine: hostEngine,
+    // Custom critical style injector (defaults to DOM insertion)
+    criticalInjector: (css, remoteName) => {
+        console.log(`Injecting critical CSS for ${remoteName}`);
+    },
+    // Custom deferred style injector (defaults to requestIdleCallback styling)
+    deferredInjector: (css, remoteName) => {
+        console.log(`Injecting deferred CSS for ${remoteName}`);
     }
+});
+```
 
-    // 2. Deduplicar globalmente los candidatos de todos los remotos
-    const candidateKey = (c: Candidate) => c.breakpoint ? `${c.breakpoint}:${c.utility}` : c.utility;
-    const dedupedCandidates = Array.from(
-        new Map(
-            remoteResponses.flatMap(res => res.candidates).map(c => [candidateKey(c), c])
-        ).values()
-    );
+#### Remote MFE Registration
 
-    console.log(dedupedCandidates);
-    // [{ utility: "flex-col" }, { utility: "gap-2", breakpoint: "lg" }]
+A Remote MFE accesses the shared `LayoutService` from the host and registers its rendering candidates:
+
+```typescript
+// On the remote, when mounting components
+import type {LayoutService, CandidateBatch} from "@ly-sys/layout-protocol";
+
+export function mountRemoteComponent(container: HTMLElement, layoutService: LayoutService) {
+    // 1. Obtain MFE component's batch output (e.g. from SSR or static rendering)
+    const batch: CandidateBatch = {
+        candidates: [{utility: "grid-cols-4"}],
+        rawCSS: {critical: ".mfe-grid { background: red; }"}
+    };
+
+    // 2. Register candidates and critical styles with the Host layout service
+    layoutService.registerCandidates(batch, "remote-mfe-auth");
+
+    // 3. Request deferred styles in a non-blocking callback (e.g., in requestIdleCallback)
+    layoutService.requestDeferredCSS("remote-mfe-auth");
 }
 ```
+
+---
+
+## Data Model Specifications
+
+### `Candidate`
+
+Represents an individual layout utility.
+
+```typescript
+type Candidate = {
+    utility: string;              // e.g. "flex-row", "gap-4" (always prefix-free)
+    breakpoint?: string;          // e.g. "md", "lg", or undefined for the baseline
+};
+```
+
+### `CandidateBatch`
+
+The payload containing styling components.
+
+```typescript
+type CandidateBatch = {
+    candidates: Candidate[];
+    rawCSS?: {
+        critical?: string;          // Injected synchronously (render-blocking)
+        deferable?: string;         // Injected asynchronously (non-blocking)
+    };
+};
+```
+
+### `LayoutService`
+
+The interface exposed via Module Federation context:
+
+```typescript
+type LayoutService = {
+    readonly engine: LayoutEngineRef;
+    registerCandidates(batch: CandidateBatch, remoteName: string): void;
+    requestDeferredCSS(remoteName: string): void;
+};
+```
+
+---
+
+## License
+
+MIT. See the root [LICENSE](../../LICENSE) file.

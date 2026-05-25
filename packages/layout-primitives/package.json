@@ -1,6 +1,11 @@
 {
   "name": "@ly-sys/layout-primitives",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cgutieco/ly-sys.git",
+    "directory": "packages/layout-primitives"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

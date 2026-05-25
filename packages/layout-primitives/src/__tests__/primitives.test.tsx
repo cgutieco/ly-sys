@@ -85,7 +85,7 @@ test("Grid columns and minChildWidth exclusion", () => {
         createElement(Grid, { columns: 3, minChildWidth: "200px" }),
       ),
     );
-  }).toThrow('[ly-sys/layout] "columns" y "minChildWidth" son mutuamente excluyentes en Grid.');
+  }).toThrow('[ly-sys/layout] "columns" and "minChildWidth" are mutually exclusive in Grid.');
 });
 
 test("Grid minChildWidth registers raw CSS in collector", () => {

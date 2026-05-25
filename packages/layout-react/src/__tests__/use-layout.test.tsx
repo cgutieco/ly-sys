@@ -17,7 +17,7 @@ test("useLayout throws in development outside LayoutProvider", () => {
 
   expect(() => {
     render(React.createElement(TestComponent));
-  }).toThrow("[ly-sys/layout] useLayout debe usarse dentro de un <LayoutProvider>.");
+  }).toThrow("[ly-sys/layout] useLayout must be used within a <LayoutProvider>.");
 
   errorSpy.mockRestore();
   if (originalEnv === undefined) {
@@ -45,7 +45,7 @@ test("useLayout falls back in production outside LayoutProvider", () => {
     render(React.createElement(FallbackComponent));
   }).not.toThrow();
 
-  expect(errorSpy).toHaveBeenCalledWith("[ly-sys/layout] useLayout fuera de LayoutProvider.");
+  expect(errorSpy).toHaveBeenCalledWith("[ly-sys/layout] useLayout outside of a <LayoutProvider>.");
   expect(resultEngine).toBeDefined();
   expect(resultEngine.resolve("pcf-flex-col", "app-flex-row")).toBe("pcf-flex-col app-flex-row");
   expect(resultEngine.prefix("flex")).toBe("flex");

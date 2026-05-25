@@ -1,31 +1,37 @@
 # @ly-sys/layout
 
-Sistema de primitivas de layout para React con deduplicación de clases, props responsivas y protocolo de candidatos para
+[![npm version](https://img.shields.io/npm/v/@ly-sys/layout?color=blue&style=flat-square)](https://www.npmjs.com/package/@ly-sys/layout)
+[![build status](https://img.shields.io/github/actions/workflow/status/cgutieco/ly-sys/ci.yml?branch=main&style=flat-square)](https://github.com/cgutieco/ly-sys/actions)
+[![license](https://img.shields.io/github/license/cgutieco/ly-sys?color=green&style=flat-square)](file:///Users/cgutieco/personal/ly-sys/LICENSE)
+[![package manager](https://img.shields.io/badge/package__manager-pnpm-ff69b4?style=flat-square)](https://pnpm.io/)
+[![build system](https://img.shields.io/badge/build__system-turborepo-orange?style=flat-square)](https://turbo.build/)
+
+React layout primitives system featuring class deduplication, responsive props, and a candidate protocol for
 micro-frontends.
 
-## Contenido
+## Contents
 
-- [Inicio rápido](#inicio-rápido)
-- [Paquetes](#paquetes)
-- [Primitivas](#primitivas)
+- [Quick Start](#quick-start)
+- [Packages](#packages)
+- [Primitives](#primitives)
 - [Engine](#engine)
-- [Integración CSS](#integración-css)
-- [Protocolo de candidatos](#protocolo-de-candidatos)
-- [API y tipos](#api-y-tipos)
-- [Infraestructura](#infraestructura)
-- [Documentación de referencia](#documentación-de-referencia)
+- [CSS Integration](#css-integration)
+- [Candidate Protocol](#candidate-protocol)
+- [API and Types](#api-and-types)
+- [Infrastructure](#infrastructure)
+- [Reference Documentation](#reference-documentation)
 
 ---
 
-## Inicio rápido
+## Quick Start
 
-Instalación:
+### Installation
 
 ```bash
 pnpm add @ly-sys/layout
 ```
 
-Uso básico:
+### Basic Usage
 
 ```tsx
 import {createLayoutEngine, LayoutProvider, Flex} from "@ly-sys/layout";
@@ -41,14 +47,14 @@ export function App() {
         <LayoutProvider engine={engine}>
             <Flex direction={{base: "column", md: "row"}} gap={4}>
                 <aside>Sidebar</aside>
-                <main>Contenido principal</main>
+                <main>Main Content</main>
             </Flex>
         </LayoutProvider>
     );
 }
 ```
 
-Importar estilos precompilados:
+### Importing Precompiled Styles
 
 ```css
 @layer global, layout, components, utils;
@@ -57,121 +63,120 @@ Importar estilos precompilados:
 
 ---
 
-## Paquetes
+## Packages
 
 ```
 packages/
-  layout/                  -> Facade pública (re-exports)
-  layout-css/              -> Estilos, PostCSS plugin y generador
+  layout/                  -> Public facade (re-exports)
+  layout-css/              -> Styles, PostCSS plugin and generator
   layout-engine/           -> Core: parser, prefixer, resolve, LRU cache
   layout-react/            -> LayoutProvider, useLayout, context
   layout-primitives/       -> Flex, Grid, Container, HStack, VStack, etc.
-  layout-protocol/         -> CandidateCollector y tipos del protocolo
+  layout-protocol/         -> CandidateCollector and protocol types
 ```
 
-| Paquete                     | Descripción                               | Deps runtime                                            | Size limit |
-|-----------------------------|-------------------------------------------|---------------------------------------------------------|------------|
-| `@ly-sys/layout`            | Facade — re-exporta todo                  | Todos los internos                                      | —          |
-| `@ly-sys/layout-engine`     | Motor de clases, deduplicación, caché LRU | `@ly-sys/layout-protocol`                               | 3 KB       |
-| `@ly-sys/layout-react`      | Provider y hook para React                | `layout-engine`, `layout-protocol`                      | 3 KB       |
-| `@ly-sys/layout-primitives` | Componentes de layout                     | `layout-engine`, `layout-react`, `@radix-ui/react-slot` | 5 KB       |
-| `@ly-sys/layout-protocol`   | Protocolo de candidatos                   | Ninguna                                                 | —          |
+| Package                     | Description                            | Runtime Deps                                            | Size Limit |
+|:----------------------------|:---------------------------------------|:--------------------------------------------------------|:-----------|
+| `@ly-sys/layout`            | Facade — re-exports everything         | All internal packages                                   | —          |
+| `@ly-sys/layout-engine`     | Class engine, deduplication, LRU cache | `@ly-sys/layout-protocol`                               | 3 KB       |
+| `@ly-sys/layout-react`      | Provider and hooks for React           | `layout-engine`, `layout-protocol`                      | 3 KB       |
+| `@ly-sys/layout-primitives` | Layout components                      | `layout-engine`, `layout-react`, `@radix-ui/react-slot` | 5 KB       |
+| `@ly-sys/layout-protocol`   | Candidate protocol                     | None                                                    | —          |
 
-Subpath exports disponibles: `@ly-sys/layout/engine`, `@ly-sys/layout/react`,
-`@ly-sys/layout/primitives`, `@ly-sys/layout/protocol`, `@ly-sys/layout/styles`.
+Subpath exports available: `@ly-sys/layout/engine`, `@ly-sys/layout/react`, `@ly-sys/layout/primitives`,
+`@ly-sys/layout/protocol`, `@ly-sys/layout/styles`.
 
 ---
 
-## Primitivas
+## Primitives
 
-Componentes incluidos (8): `Flex`, `Grid`, `GridItem`, `Container`, `HStack`, `VStack`, `Center`, `Spacer`.
+Included components (8): `Flex`, `Grid`, `GridItem`, `Container`, `HStack`, `VStack`, `Center`, `Spacer`.
 
-Todas las primitivas comparten:
+All primitives share:
 
-- `gap` (valores responsivos)
-- `asChild` para renderizado polimórfico via `@radix-ui/react-slot`
-- props HTML nativas del elemento que se renderiza
+- `gap` (responsive values)
+- `asChild` for polymorphic rendering via `@radix-ui/react-slot`
+- Native HTML props of the rendered element
 
-Resumen de props específicas:
+Summary of specific props:
 
 - `Flex`: `direction`, `wrap`, `align`, `justify`, `basis`, `grow`, `shrink`
-- `HStack` / `VStack`: las de `Flex` excepto `direction`
+- `HStack` / `VStack`: same as `Flex` except `direction`
 - `Grid`: `columns`, `minChildWidth`, `rowGap`, `columnGap`
 - `GridItem`: `colSpan`, `rowSpan`, `colStart`, `colEnd`, `rowStart`, `rowEnd`
 - `Container`: `maxWidth`, `centerContent`
 - `Center`: `inline`
-- `Spacer`: sin props propias, emite `flex-1`
+- `Spacer`: no custom props, outputs `flex-1`
 
-Notas importantes:
-
-- `Grid` solo permite `columns` y `minChildWidth` a la vez cuando `validationMode` es `Permissive`. En los demás modos
-  lanza un error.
-- El breakpoint `base` no genera prefijo (si está incluido en `breakpoints`).
+> [!IMPORTANT]
+> `Grid` only allows `columns` and `minChildWidth` simultaneously when `validationMode` is `Permissive`. In other modes,
+> it throws a runtime validation error.
+> The `base` breakpoint does not generate a prefix (if included in `breakpoints`).
 
 ---
 
 ## Engine
 
-El engine expone tres operaciones principales:
+The engine exposes three main operations:
 
-- `parseResponsive`: convierte valores responsivos en clases prefijadas.
-- `resolve`: deduplica clases con prioridad `app > neutral > lib`.
-- `prefix`: aplica `libPrefix` a utilidades.
+- `parseResponsive`: converts responsive values into prefixed CSS classes.
+- `resolve`: deduplicates classes with priority `app > neutral > lib`.
+- `prefix`: applies `libPrefix` to utilities.
 
-Detalles relevantes del comportamiento:
+Relevant details:
 
-- Deduplicación en O(n) con mapa estático de colisiones y LRU de 500 entradas.
-- Valores inválidos se omiten; en modo dev se reportan por consola.
-- `libPrefix` default: `"ly-sys"`. `appPrefix` default: `""`.
+- Deduplication runs in $O(n)$ with a static collision map and a 500-entry LRU cache.
+- Invalid values are skipped; in dev mode they are logged to the console.
+- `libPrefix` defaults to `"ly-sys"`. `appPrefix` defaults to `""`.
 
-Validación y errores:
+Validation and errors:
 
-- `validationMode: Permissive` desactiva la validación por `propRules`.
-- `useLayout` fuera de `LayoutProvider` lanza error solo en desarrollo; en producción hace `console.error` y retorna
-  un engine vacío.
-
----
-
-## Integración CSS
-
-Las utilidades y tokens se generan en capas `@layer global` y `@layer layout`. Los tokens disponibles incluyen:
-
-- `--ly-sys-gap-*`, `--ly-sys-padding-*`, `--ly-sys-margin-*` (1 a 12)
-- `--ly-sys-max-w-*` (`xs` a `7xl`, `full`, `min`, `max`, `fit`)
-
-Para prefijos o breakpoints personalizados usa el plugin de PostCSS:
-
-- Importa `layoutPostcssPlugin` desde `@ly-sys/layout/postcss`.
-- Agrega la directiva `@ly-sys-layout;` en tu CSS.
+- `validationMode: Permissive` disables validation via `propRules`.
+- `useLayout` called outside of `LayoutProvider` throws an error in development; in production it calls `console.error`
+  and returns an empty engine.
 
 ---
 
-## Protocolo de candidatos
+## CSS Integration
 
-En modo `candidateMode: Collect`, el `LayoutProvider` decora el engine para registrar utilidades usadas y opcionalmente
-CSS arbitrario (por ejemplo, `minChildWidth`) mediante `CandidateCollector`. El host puede consolidar candidatos y pedir
-CSS crítico/diferido a un servicio centralizado.
+Utilities and tokens are generated inside `@layer global` and `@layer layout`. Available tokens include:
 
-El contrato del protocolo está en `@ly-sys/layout-protocol` y expone `CANDIDATE_PROTOCOL_VERSION`.
+- `--ly-sys-gap-*`, `--ly-sys-padding-*`, `--ly-sys-margin-*` (values 1 to 12)
+- `--ly-sys-max-w-*` (`xs` to `7xl`, `full`, `min`, `max`, `fit`)
 
----
+For custom prefixes or breakpoints, use the PostCSS plugin:
 
-## API y tipos
-
-La referencia completa está en los tipos TypeScript distribuidos por cada paquete. Puntos clave:
-
-- `createLayoutEngine` acepta `EngineConfig` con `breakpoints`, `libPrefix`, `appPrefix`, `propRules` y modos de
-  validación/candidatos.
-- `LayoutProvider` recibe `engine` y opcionalmente `collector`.
-- `useLayout` devuelve `{ engine, collector }`.
+- Import `layoutPostcssPlugin` from `@ly-sys/layout/postcss`.
+- Add `@ly-sys-layout;` directive in your CSS.
 
 ---
 
-## Infraestructura
+## Candidate Protocol
 
-Herramientas principales: pnpm, Turborepo, tsup, TypeScript, Vitest, Testing Library, Biome, size-limit.
+In `candidateMode: Collect`, `LayoutProvider` decorates the engine to register used utilities and optionally arbitrary
+CSS (e.g. `minChildWidth`) using `CandidateCollector`. The host can consolidate candidates and request critical/deferred
+CSS from a centralized service.
 
-Scripts disponibles:
+The protocol contract resides in `@ly-sys/layout-protocol` and exposes `CANDIDATE_PROTOCOL_VERSION`.
+
+---
+
+## API and Types
+
+The complete reference is available in the TypeScript types distributed by each package. Key points:
+
+- `createLayoutEngine` accepts `EngineConfig` with `breakpoints`, `libPrefix`, `appPrefix`, `propRules`, and
+  validation/candidate modes.
+- `LayoutProvider` receives `engine` and optionally `collector`.
+- `useLayout` returns `{ engine, collector }`.
+
+---
+
+## Infrastructure
+
+Main tools: pnpm, Turborepo, tsup, TypeScript, Vitest, Testing Library, Biome, size-limit.
+
+Available scripts:
 
 ```bash
 pnpm build
@@ -185,12 +190,12 @@ pnpm size-limit
 
 ---
 
-## Documentación de referencia
+## Reference Documentation
 
 - [Distributed Provider CSS Management (Medium)](https://medium.com/@pieroramirez810/distributed-provider-css-management-c5452b2b2166)
 
 ---
 
-## Licencia
+## License
 
-MIT. Ver el archivo `LICENSE`.
+MIT. See the [LICENSE](./LICENSE) file.
