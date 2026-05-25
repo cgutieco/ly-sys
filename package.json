@@ -1,0 +1,43 @@
+{
+  "name": "ly-sys-layout-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "High-performance Layout System Monorepo",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "lint:fix": "biome check --write .",
+    "size-limit": "size-limit",
+    "format": "biome format --write .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
+    "@size-limit/preset-small-lib": "~12.1.0",
+    "@testing-library/react": "~16.3.2",
+    "@types/node": "~25.9.1",
+    "@types/react": "~19.2.15",
+    "@types/react-dom": "~19.2.3",
+    "husky": "~9.1.7",
+    "jsdom": "~29.1.1",
+    "react": "~19.2.6",
+    "react-dom": "~19.2.6",
+    "size-limit": "~12.1.0",
+    "tsup": "~8.5.1",
+    "turbo": "^2.9.14",
+    "typescript": "~6.0.3",
+    "vitest": "~4.1.7"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "~19.2.15",
+      "@types/react-dom": "~19.2.3"
+    },
+    "ignoredBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

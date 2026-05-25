@@ -1,0 +1,64 @@
+{
+  "name": "@ly-sys/layout",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./engine": {
+      "types": "./dist/engine.d.ts",
+      "import": "./dist/engine.js",
+      "require": "./dist/engine.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./primitives": {
+      "types": "./dist/primitives.d.ts",
+      "import": "./dist/primitives.js",
+      "require": "./dist/primitives.cjs"
+    },
+    "./protocol": {
+      "types": "./dist/protocol.d.ts",
+      "import": "./dist/protocol.js",
+      "require": "./dist/protocol.cjs"
+    },
+    "./postcss": {
+      "types": "./dist/postcss-plugin.d.ts",
+      "import": "./dist/postcss-plugin.js",
+      "require": "./dist/postcss-plugin.cjs"
+    },
+    "./styles": "./dist/styles/layout.css",
+    "./styles.css": "./dist/styles/layout.css",
+    "./styles/ly": "./dist/styles/layout-ly.css",
+    "./styles/ly.css": "./dist/styles/layout-ly.css"
+  },
+  "dependencies": {
+    "@ly-sys/layout-engine": "workspace:*",
+    "@ly-sys/layout-protocol": "workspace:*",
+    "@ly-sys/layout-react": "workspace:*",
+    "@ly-sys/layout-primitives": "workspace:*",
+    "@ly-sys/layout-css": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "scripts": {
+    "build": "tsup && node scripts/build-css.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "lint": "biome lint src"
+  },
+  "files": [
+    "dist"
+  ]
+}

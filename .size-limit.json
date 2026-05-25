@@ -1,0 +1,19 @@
+[
+  {
+    "name": "layout-engine",
+    "path": "packages/layout-engine/dist/index.js",
+    "limit": "3 KB"
+  },
+  {
+    "name": "layout-react",
+    "path": "packages/layout-react/dist/index.js",
+    "limit": "3 KB",
+    "ignore": ["react", "react-dom", "@ly-sys/layout-engine"]
+  },
+  {
+    "name": "layout-primitives",
+    "path": "packages/layout-primitives/dist/index.js",
+    "limit": "5 KB",
+    "ignore": ["react", "react-dom", "@ly-sys/layout-engine", "@ly-sys/layout-react"]
+  }
+]

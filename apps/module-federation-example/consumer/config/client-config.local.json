@@ -1,0 +1,8 @@
+{
+  "remotes": [
+    {
+      "name": "providerA",
+      "entry": "http://localhost:3001/mf-manifest.json"
+    }
+  ]
+}

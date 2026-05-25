@@ -1,0 +1,36 @@
+{
+  "name": "consumer",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "rsbuild dev",
+    "build": "rsbuild build",
+    "preview": "rsbuild preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@computerwwwizards/dependency-injection": "~1.8.1",
+    "@ly-sys/layout": "workspace:*",
+    "@ly-sys/layout-engine": "workspace:*",
+    "@ly-sys/layout-primitives": "workspace:*",
+    "@ly-sys/layout-protocol": "workspace:*",
+    "@ly-sys/layout-react": "workspace:*",
+    "@module-federation/enhanced": "~2.5.0",
+    "react": "~19.2.6",
+    "react-dom": "~19.2.6",
+    "react-router": "~7.15.1"
+  },
+  "devDependencies": {
+    "@module-federation/rsbuild-plugin": "~2.5.0",
+    "@rsbuild/core": "~2.0.7",
+    "@rsbuild/plugin-react": "~2.0.0",
+    "@tailwindcss/postcss": "~4.3.0",
+    "@types/node": "~25.9.1",
+    "@types/react": "~19.2.15",
+    "@types/react-dom": "~19.2.3",
+    "postcss": "~8.5.15",
+    "tailwindcss": "~4.3.0",
+    "typescript": "~6.0.3"
+  }
+}

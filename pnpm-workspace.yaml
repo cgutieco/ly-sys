@@ -1,0 +1,5 @@
+packages:
+  - 'packages/*'
+  - 'apps/module-federation-example/*'
+  - 'apps/standalone-app-example'
+

@@ -1,0 +1,9 @@
+declare namespace NodeJS {
+  interface ProcessEnv {
+    NODE_ENV?: "development" | "production" | "test" | string;
+  }
+}
+
+interface DOMStringMap {
+  lyDeferred?: string;
+}

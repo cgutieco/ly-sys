@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# 1. Format code automatically and re-stage formatted changes
+npx biome format --write . && git add .
+
+# 2. Check for linter errors and run the test suite (blocks commit if either fails)
+npx biome lint . && pnpm test

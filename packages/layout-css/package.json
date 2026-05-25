@@ -1,0 +1,33 @@
+{
+  "name": "@ly-sys/layout-css",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "ly-layout-css": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./postcss": {
+      "types": "./dist/postcss-plugin.d.ts",
+      "import": "./dist/postcss-plugin.js"
+    }
+  },
+  "dependencies": {
+    "postcss": "~8.5.15"
+  },
+  "devDependencies": {
+    "@types/node": "~25.9.1",
+    "tsup": "~8.5.1",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  }
+}

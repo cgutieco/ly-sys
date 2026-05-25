@@ -1,0 +1,27 @@
+@layer theme, base, global, layout, components, utilities;
+
+@import "tailwindcss";
+@import "@ly-sys/layout/styles/ly.css";
+
+:root {
+  --ly-color-primary-base: #6366f1; /* Indigo-500 */
+  --ly-color-primary-hover: #4f46e5; /* Indigo-600 */
+  --ly-color-primary-active: #4338ca; /* Indigo-700 */
+  --ly-color-bg-base: #0f172a; /* Slate-900 */
+  --ly-color-bg-card: #1e293b; /* Slate-800 */
+  --ly-color-border: #334155; /* Slate-700 */
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #a5b4fc, #6366f1, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
