@@ -3,11 +3,11 @@ import { type GeneratorConfig, generateLayoutCSS } from "./generator.js";
 
 export const layoutPostcssPlugin: PluginCreator<GeneratorConfig> = (opts = {}) => ({
   postcssPlugin: "postcss-ly-sys-layout",
-  AtRule(atRule) {
-    if (atRule.name === "ly-sys-layout") {
+  Once(root) {
+    root.walkAtRules("ly-sys-layout", (atRule) => {
       const css = generateLayoutCSS(opts);
       atRule.replaceWith(css);
-    }
+    });
   },
 });
 
