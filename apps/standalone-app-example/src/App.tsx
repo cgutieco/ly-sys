@@ -1,4 +1,15 @@
-import { Center, Container, Flex, Grid, GridItem, HStack, Spacer, VStack } from "@ly-sys/layout";
+import {
+  Center,
+  Container,
+  Flex,
+  Grid,
+  GridItem,
+  HStack,
+  Slot,
+  Slottable,
+  Spacer,
+  VStack,
+} from "@ly-sys/layout";
 import { useEffect, useState } from "react";
 
 export const App = () => {
@@ -6,6 +17,28 @@ export const App = () => {
   const [activeTab, setActiveTab] = useState("engine");
   const [layoutGridCols, setLayoutGridCols] = useState<any>(3);
   const [cyberStatus, setCyberStatus] = useState("SYSTEM_ONLINE");
+
+  // Polymorphic Slot demo states
+  const [slotAsChild, setSlotAsChild] = useState(false);
+  const [slotClickCount, setSlotClickCount] = useState(0);
+  const [slotEventLog, setSlotEventLog] = useState<string[]>([]);
+
+  const logSlotEvent = (msg: string) => {
+    setSlotEventLog((prev) => [msg, ...prev.slice(0, 4)]);
+  };
+
+  // A polymorphic Button using our new Slot utility
+  const CustomButton = ({ asChild, children, ...props }: any) => {
+    const Component = asChild ? Slot : "button";
+    return (
+      <Component
+        className="px-6 py-3 rounded-xl font-bold uppercase tracking-wider transition-all duration-300 dark:bg-linear-to-r dark:from-cyber-pink dark:to-purple-600 bg-linear-to-r from-pink-500 to-purple-600 text-white cursor-pointer hover:brightness-110 active:scale-95 shadow-md flex items-center justify-center gap-2 select-none border border-pink-500/30"
+        {...props}
+      >
+        <Slottable>{children}</Slottable>
+      </Component>
+    );
+  };
 
   // Manage dark/light class on document
   useEffect(() => {
@@ -503,6 +536,173 @@ export const App = () => {
         </Container>
       </section>
 
+      {/* 4.5. COMPOSICIÓN POLIMÓRFICA (Slot & Slottable) */}
+      <section
+        id="polymorphism"
+        className="py-20 border-t dark:border-slate-900 border-slate-200 dark:bg-slate-950/20 bg-slate-100/10"
+      >
+        <Container maxWidth="7xl">
+          <VStack gap={4} align="center" className="w-full text-center mb-16">
+            <span className="text-xs font-black tracking-widest uppercase dark:text-cyber-pink text-pink-600">
+              POLIMORFISMO DE COMPONENTES
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black uppercase dark:text-white text-slate-900">
+              DEMO DE SLOT & SLOTTABLE
+            </h2>
+            <p className="text-sm dark:text-slate-400 text-slate-600 max-w-xl">
+              Nuestra nueva utilidad de `@ly-sys/react-slot` permite que cualquier nodo de diseño se
+              comporte de forma polimórfica sin añadir nodos extra al DOM.
+            </p>
+          </VStack>
+
+          <Grid columns={{ base: 1, md: 2 }} gap={8}>
+            {/* Controles de Composición */}
+            <GridItem>
+              <VStack
+                gap={6}
+                className="p-6 dark:bg-slate-900/30 bg-white rounded-2xl border dark:border-slate-900 border-slate-200 dark:neon-border-pink neon-border-cyan h-full"
+              >
+                <h3 className="text-md font-bold uppercase tracking-wider dark:text-white text-slate-900 border-b dark:border-slate-900 border-slate-200 pb-2 w-full">
+                  CONFIGURACIÓN DEL SLOT
+                </h3>
+
+                {/* Control 1: Activar asChild */}
+                <VStack gap={2} align="start" className="w-full">
+                  <span className="text-xs font-semibold dark:text-slate-400 text-slate-500">
+                    MODO DE COMPOSICIÓN (asChild)
+                  </span>
+                  <HStack gap={4} className="w-full">
+                    <button
+                      onClick={() => {
+                        setSlotAsChild(false);
+                        logSlotEvent("Modo cambiado a button estándar");
+                      }}
+                      className={`flex-1 py-3 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                        slotAsChild
+                          ? "dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600 dark:border-slate-800 border-slate-300"
+                          : "dark:bg-cyber-cyan bg-purple-600 dark:text-slate-950 text-white border-transparent shadow-md"
+                      }`}
+                    >
+                      button ESTÁNDAR
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSlotAsChild(true);
+                        logSlotEvent("Modo cambiado a asChild (Delegación en <a>)");
+                      }}
+                      className={`flex-1 py-3 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                        slotAsChild
+                          ? "dark:bg-cyber-pink bg-pink-500 text-white border-transparent shadow-md"
+                          : "dark:bg-slate-900 bg-slate-100 dark:text-slate-400 text-slate-600 dark:border-slate-800 border-slate-300"
+                      }`}
+                    >
+                      asChild (a ENLACE)
+                    </button>
+                  </HStack>
+                </VStack>
+
+                {/* Visualizador de Código Renderizado */}
+                <VStack gap={2} align="start" className="w-full">
+                  <span className="text-xs font-semibold dark:text-slate-400 text-slate-500">
+                    ESTRUCTURA JSX
+                  </span>
+                  <div className="w-full p-4 rounded-xl dark:bg-slate-950 bg-slate-950 font-mono text-[10px] text-slate-300 border dark:border-slate-900 border-slate-800 overflow-x-auto">
+                    {slotAsChild ? (
+                      <pre className="text-pink-400">
+                        {`<CustomButton asChild onClick={slotClick}>
+  <a href="#specs" onClick={childClick}>
+    🧬 Renderizado como Enlace &lt;a&gt;
+  </a>
+</CustomButton>`}
+                      </pre>
+                    ) : (
+                      <pre className="text-cyan-400">
+                        {`<CustomButton onClick={slotClick}>
+  <span>🔘 Renderizado como Botón &lt;button&gt;</span>
+</CustomButton>`}
+                      </pre>
+                    )}
+                  </div>
+                </VStack>
+              </VStack>
+            </GridItem>
+
+            {/* Vista Previa y Log */}
+            <GridItem>
+              <VStack
+                gap={6}
+                className="p-6 dark:bg-slate-900/30 bg-white rounded-2xl border dark:border-slate-900 border-slate-200 dark:neon-border-cyan neon-border-pink h-full"
+              >
+                <h3 className="text-md font-bold uppercase tracking-wider dark:text-white text-slate-900 border-b dark:border-slate-900 border-slate-200 pb-2 w-full">
+                  VISTA PREVIA EN VIVO
+                </h3>
+
+                <Center className="w-full p-6 border dark:border-slate-800 border-slate-200 rounded-xl dark:bg-slate-950/40 bg-slate-50 min-h-32">
+                  <CustomButton
+                    asChild={slotAsChild}
+                    onClick={() => {
+                      setSlotClickCount((c) => c + 1);
+                      logSlotEvent("Slot.onClick ejecutado");
+                    }}
+                  >
+                    {slotAsChild ? (
+                      <a
+                        href="#specs"
+                        onClick={() => {
+                          logSlotEvent("Hijo.onClick ejecutado");
+                        }}
+                      >
+                        🧬 Enlace (asChild)
+                      </a>
+                    ) : (
+                      <span>🔘 Botón Estándar</span>
+                    )}
+                  </CustomButton>
+                </Center>
+
+                {/* Monitor de Eventos */}
+                <VStack gap={2} align="start" className="w-full flex-1">
+                  <HStack justify="between" className="w-full">
+                    <span className="text-xs font-semibold dark:text-slate-400 text-slate-500">
+                      CONSOLA DE EVENTOS (CLICS: {slotClickCount})
+                    </span>
+                    <button
+                      onClick={() => {
+                        setSlotClickCount(0);
+                        setSlotEventLog([]);
+                      }}
+                      className="text-[9px] font-mono dark:text-cyber-pink text-pink-600 hover:underline cursor-pointer"
+                    >
+                      LIMPIAR
+                    </button>
+                  </HStack>
+                  <div className="w-full p-4 rounded-xl dark:bg-slate-950 bg-slate-900 font-mono text-[10px] dark:text-slate-400 text-slate-600 border dark:border-slate-900 border-slate-200 min-h-24 flex flex-col justify-end">
+                    {slotEventLog.length === 0 ? (
+                      <p className="dark:text-slate-600 text-slate-400 italic">
+                        Esperando interacciones...
+                      </p>
+                    ) : (
+                      slotEventLog.map((log) => (
+                        <p
+                          key={log}
+                          className={
+                            slotEventLog[0] === log
+                              ? "dark:text-cyber-green text-emerald-600 font-bold"
+                              : "dark:text-slate-500 text-slate-400 opacity-60"
+                          }
+                        >
+                          &gt; {log}
+                        </p>
+                      ))
+                    )}
+                  </div>
+                </VStack>
+              </VStack>
+            </GridItem>
+          </Grid>
+        </Container>
+      </section>
+
       {/* 5. TECH SPECS (Using Grid & GridItem) */}
       <section
         id="specs"
@@ -581,8 +781,8 @@ export const App = () => {
                     asChild Semantic Markup
                   </span>
                   <p className="text-[11px] dark:text-slate-400 text-slate-500 leading-relaxed">
-                    Radix UI Slot primitive integrated within layout nodes to support semantic tags
-                    without wrapper clutter.
+                    Custom Slot primitive (@ly-sys/react-slot) integrated within layout nodes to
+                    support semantic tags without wrapper clutter.
                   </p>
                 </div>
               </Grid>

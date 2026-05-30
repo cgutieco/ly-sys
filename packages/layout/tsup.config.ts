@@ -7,6 +7,7 @@ export default defineConfig({
     react: "src/react.ts",
     primitives: "src/primitives.ts",
     protocol: "src/protocol.ts",
+    slot: "src/slot.ts",
     "postcss-plugin": "src/postcss-plugin.ts",
   },
   format: ["cjs", "esm"],
@@ -23,5 +24,6 @@ export default defineConfig({
     "@ly-sys/layout-react",
     "@ly-sys/layout-primitives",
     "@ly-sys/layout-css",
+    "@ly-sys/react-slot",
   ],
 });

@@ -23,7 +23,7 @@ and the MFE candidate protocol under a single public interface.
   compatibility and deterministic styling alongside Tailwind CSS or custom style rules.
 - **Decoupled MFE Protocol**: Enables Server-Side Rendering (SSR) safe candidate-based style extraction for federated
   micro-frontend architectures.
-- **Polymorphism**: Native support for the `asChild` property (via `@radix-ui/react-slot`), allowing you to render any
+- **Polymorphism**: Native support for the `asChild` property (via `@ly-sys/react-slot`), allowing you to render any
   layout primitive as a semantic HTML tag or custom React component.
 
 ---
@@ -38,6 +38,7 @@ This package aggregates the following modular sub-packages:
 | [`@ly-sys/layout-primitives`](https://www.npmjs.com/package/@ly-sys/layout-primitives) | React elements: `Flex`, `Grid`, `HStack`, `VStack`, etc.           | ~5 KB                  |
 | [`@ly-sys/layout-react`](https://www.npmjs.com/package/@ly-sys/layout-react)           | `LayoutProvider`, `useLayout` context hook, and engine decorators. | ~3 KB                  |
 | [`@ly-sys/layout-protocol`](https://www.npmjs.com/package/@ly-sys/layout-protocol)     | Versioned `CandidateCollector` and types for style federation.     | < 1 KB                 |
+| [`@ly-sys/react-slot`](https://www.npmjs.com/package/@ly-sys/react-slot)               | Polymorphic `Slot` and `Slottable` utility components.             | ~1 KB                  |
 
 ---
 
@@ -199,7 +200,7 @@ const engine = createLayoutEngine({libPrefix: "ly"});
 // 2. Render application
 const html = ReactDOMServer.renderToString(
     <LayoutProvider engine={engine} collector={collector}>
-        <App />
+        <App/>
     </LayoutProvider>
 );
 

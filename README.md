@@ -67,12 +67,13 @@ export function App() {
 
 ```
 packages/
-  layout/                  -> Public facade (re-exports)
+  layout/                  -> Public facade (re-exports) 
   layout-css/              -> Styles, PostCSS plugin and generator
   layout-engine/           -> Core: parser, prefixer, resolve, LRU cache
   layout-react/            -> LayoutProvider, useLayout, context
   layout-primitives/       -> Flex, Grid, Container, HStack, VStack, etc.
   layout-protocol/         -> CandidateCollector and protocol types
+  react-slot/              -> Polymorphic Slot and Slottable utility components
 ```
 
 | Package                     | Description                            | Runtime Deps                                            | Size Limit |
@@ -80,11 +81,12 @@ packages/
 | `@ly-sys/layout`            | Facade — re-exports everything         | All internal packages                                   | —          |
 | `@ly-sys/layout-engine`     | Class engine, deduplication, LRU cache | `@ly-sys/layout-protocol`                               | 3 KB       |
 | `@ly-sys/layout-react`      | Provider and hooks for React           | `layout-engine`, `layout-protocol`                      | 3 KB       |
-| `@ly-sys/layout-primitives` | Layout components                      | `layout-engine`, `layout-react`, `@radix-ui/react-slot` | 5 KB       |
+| `@ly-sys/layout-primitives` | Layout components                      | `layout-engine`, `layout-react`, `@ly-sys/react-slot`   | 5 KB       |
 | `@ly-sys/layout-protocol`   | Candidate protocol                     | None                                                    | —          |
+| `@ly-sys/react-slot`        | Polymorphic Slot and Slottable         | None                                                    | 1 KB       |
 
 Subpath exports available: `@ly-sys/layout/engine`, `@ly-sys/layout/react`, `@ly-sys/layout/primitives`,
-`@ly-sys/layout/protocol`, `@ly-sys/layout/styles`.
+`@ly-sys/layout/protocol`, `@ly-sys/layout/slot`, `@ly-sys/layout/styles`.
 
 ---
 
@@ -95,7 +97,7 @@ Included components (8): `Flex`, `Grid`, `GridItem`, `Container`, `HStack`, `VSt
 All primitives share:
 
 - `gap` (responsive values)
-- `asChild` for polymorphic rendering via `@radix-ui/react-slot`
+- `asChild` for polymorphic rendering via `@ly-sys/react-slot`
 - Native HTML props of the rendered element
 
 Summary of specific props:

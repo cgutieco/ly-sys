@@ -1,6 +1,6 @@
 {
   "name": "@ly-sys/layout",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cgutieco/ly-sys.git",
@@ -36,6 +36,11 @@
       "import": "./dist/protocol.js",
       "require": "./dist/protocol.cjs"
     },
+    "./slot": {
+      "types": "./dist/slot.d.ts",
+      "import": "./dist/slot.js",
+      "require": "./dist/slot.cjs"
+    },
     "./postcss": {
       "types": "./dist/postcss-plugin.d.ts",
       "import": "./dist/postcss-plugin.js",
@@ -51,7 +56,8 @@
     "@ly-sys/layout-protocol": "workspace:*",
     "@ly-sys/layout-react": "workspace:*",
     "@ly-sys/layout-primitives": "workspace:*",
-    "@ly-sys/layout-css": "workspace:*"
+    "@ly-sys/layout-css": "workspace:*",
+    "@ly-sys/react-slot": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
