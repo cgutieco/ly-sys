@@ -1,10 +1,10 @@
 {
-  "name": "@ly-sys/layout-engine",
+  "name": "@ly-sys/react-slot",
   "version": "1.0.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cgutieco/ly-sys.git",
-    "directory": "packages/layout-engine"
+    "directory": "packages/react-slot"
   },
   "type": "module",
   "main": "./dist/index.cjs",
@@ -17,8 +17,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "dependencies": {
-    "@ly-sys/layout-protocol": "workspace:*"
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "scripts": {
     "build": "tsup",

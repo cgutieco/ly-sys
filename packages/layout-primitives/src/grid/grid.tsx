@@ -1,7 +1,7 @@
 import type { LayoutEngine, ResponsiveValue } from "@ly-sys/layout-engine";
 import { type CandidateCollector, CandidateMode, ValidationMode } from "@ly-sys/layout-protocol";
 import { useLayout } from "@ly-sys/layout-react";
-import { Slot } from "@radix-ui/react-slot";
+import { Slot } from "@ly-sys/react-slot";
 import { createElement, type ElementType, forwardRef, type ReactElement, type Ref } from "react";
 import { BREAKPOINT_MEDIA_QUERIES, escapeSelector, formatSize } from "../shared/utility-fns.js";
 import type { GridProps } from "./grid.types.js";

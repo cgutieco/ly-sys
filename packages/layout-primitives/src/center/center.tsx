@@ -1,5 +1,5 @@
 import { useLayout } from "@ly-sys/layout-react";
-import { Slot } from "@radix-ui/react-slot";
+import { Slot } from "@ly-sys/react-slot";
 import { createElement, type ElementType, forwardRef, type ReactElement, type Ref } from "react";
 import type { CenterProps } from "./center.types.js";
 

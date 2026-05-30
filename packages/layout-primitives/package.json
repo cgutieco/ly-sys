@@ -1,6 +1,6 @@
 {
   "name": "@ly-sys/layout-primitives",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cgutieco/ly-sys.git",
@@ -20,7 +20,7 @@
   "dependencies": {
     "@ly-sys/layout-engine": "workspace:*",
     "@ly-sys/layout-react": "workspace:*",
-    "@radix-ui/react-slot": "~1.2.4"
+    "@ly-sys/react-slot": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
