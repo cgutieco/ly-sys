@@ -1,0 +1,13 @@
+@reference "../global.css";
+
+@layer components {
+  .providera-btn {
+    background-color: var(--ly-color-primary-base, #6366f1);
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+}
