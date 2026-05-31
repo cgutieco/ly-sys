@@ -89,7 +89,7 @@ Then, import or insert the directive in your global CSS stylesheet:
 
 ```css
 /* src/index.css */
-@layer theme, base, global, layout, components, utilities;
+@import "tailwindcss";
 
 /* Inject generated stylesheet here */
 @ly-sys-layout;

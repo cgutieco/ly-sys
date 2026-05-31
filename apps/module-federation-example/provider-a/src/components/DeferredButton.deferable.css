@@ -1,0 +1,19 @@
+@reference "../global.css";
+
+@layer components {
+  .providera-btn {
+    transition:
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 0.3s,
+      box-shadow 0.3s;
+  }
+  .providera-btn:hover {
+    transform: translateY(-2px);
+    background-color: var(--ly-color-primary-hover, #4f46e5);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+  .providera-btn:active {
+    transform: translateY(0);
+    filter: brightness(0.9);
+  }
+}

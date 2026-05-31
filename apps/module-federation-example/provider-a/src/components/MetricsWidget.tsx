@@ -2,8 +2,8 @@ import { Grid, GridItem, HStack, VStack } from "@ly-sys/layout";
 import type { RemoteCtx } from "../services/mock-plugins";
 import { DeferredButton } from "./DeferredButton";
 import { InteractiveAccordion } from "./InteractiveAccordion";
-import { NavigationChip } from "./NavigationChip";
 import { ManualCandidatesWidget } from "./ManualCandidatesWidget";
+import { NavigationChip } from "./NavigationChip";
 
 type MetricsWidgetProps = {
   ctx: RemoteCtx;
@@ -133,10 +133,7 @@ export const MetricsWidget = ({ ctx }: MetricsWidgetProps) => {
             layoutService.
           </p>
           <HStack>
-            <DeferredButton
-              onClick={() => alert("¡Hiciste clic en el botón con CSS diferido!")}
-              layoutService={layoutService}
-            >
+            <DeferredButton onClick={() => alert("¡Hiciste clic en el botón con CSS diferido!")}>
               Inyectar CSS e Interactuar
             </DeferredButton>
           </HStack>

@@ -1,8 +1,7 @@
-import "./global.css";
-
 import { BasicChildContainer } from "@computerwwwizards/dependency-injection";
 import type { PatchRoutesOnNavigationFunctionArgs } from "react-router";
 import { MetricsWidget } from "./components/MetricsWidget";
+import { PROVIDERA_CRITICAL_CSS, PROVIDERA_DEFERRED_CSS } from "./styles/styles";
 
 export default async function patchOnNavigation(
   { patch }: PatchRoutesOnNavigationFunctionArgs,
@@ -30,29 +29,15 @@ export default async function patchOnNavigation(
     );
   }
 
-  // 2. Registrar CSS diferido no crítico en el layout-service
+  // 2. Registrar CSS crítico y diferido en el layout-service
   if (ctx?.get("layout-service", true)) {
     const layoutService = ctx.get("layout-service");
     layoutService.registerCandidates(
       {
         candidates: [],
         rawCSS: {
-          deferable: `
-          /* CSS diferido de la cabecera del widget del remoto */
-          .providera-highlight-line {
-            position: relative;
-          }
-          .providera-highlight-line::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 40px;
-            height: 2px;
-            background: var(--ly-color-primary-base);
-            box-shadow: 0 0 8px var(--ly-color-primary-base);
-          }
-        `,
+          critical: PROVIDERA_CRITICAL_CSS,
+          deferable: PROVIDERA_DEFERRED_CSS,
         },
       },
       "provider-a-general",
