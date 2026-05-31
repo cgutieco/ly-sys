@@ -1,6 +1,7 @@
 import type { LayoutService } from "@ly-sys/layout";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import accordionDeferableCss from "./InteractiveAccordion.deferable.css?inline";
 
 type InteractiveAccordionProps = {
   title: string;
@@ -16,27 +17,18 @@ export const InteractiveAccordion = ({
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Registrar animaciones de altura y opacidad diferidas
+    // Registrar animaciones de altura y opacidad diferidas utilizando el import ?inline
     layoutService.registerCandidates(
       {
         candidates: [],
         rawCSS: {
-          deferable: `
-          @keyframes slideDown {
-            from { max-height: 0; opacity: 0; }
-            to { max-height: 500px; opacity: 1; }
-          }
-          .accordion-content-active {
-            animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            overflow: hidden;
-          }
-        `,
+          deferable: accordionDeferableCss,
         },
       },
       "provider-a-accordion",
     );
 
-    // Difeerir inyección
+    // Diferir inyección
     layoutService.requestDeferredCSS("provider-a-accordion");
   }, [layoutService]);
 

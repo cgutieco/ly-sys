@@ -1,0 +1,15 @@
+@reference "../global.css";
+
+.providera-highlight-line {
+  position: relative;
+}
+.providera-highlight-line::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--ly-color-primary-base);
+  box-shadow: 0 0 8px var(--ly-color-primary-base);
+}
